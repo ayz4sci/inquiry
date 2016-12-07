@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.afollestad.inquiry.annotations.Column;
@@ -23,6 +24,7 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -428,6 +430,13 @@ class ClassRowConverter {
             projection.add(selectColumnName(colAnn, fld));
         }
         return projection.toArray(new String[projection.size()]);
+    }
+
+    static String[] generateDistinct(String[] distinct) {
+        ArrayList<String> projectionArrayList = new ArrayList<>();
+        String distinctQuery = "DISTINCT " + TextUtils.join(",", distinct);
+        projectionArrayList.add(0, distinctQuery);
+        return projectionArrayList.toArray(new String[projectionArrayList.size()]);
     }
 
     static String selectColumnName(Column ann, Field fld) {

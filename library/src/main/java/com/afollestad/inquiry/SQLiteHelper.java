@@ -9,11 +9,11 @@ import android.util.Log;
 
 class SQLiteHelper extends SQLiteOpenHelper {
 
+    private String lastTableName;
+
     SQLiteHelper(Context context, String databaseName, int version) {
         super(context, databaseName == null || databaseName.equals(":memory") ? null : databaseName, null, version);
     }
-
-    private String lastTableName;
 
     void createTableIfNecessary(String name, Class<?> rowCls) {
         lastTableName = name;
@@ -39,8 +39,8 @@ class SQLiteHelper extends SQLiteOpenHelper {
     }
 
     public final Cursor query(String tableName, String[] projection, String selection,
-                              String[] selectionArgs, String sortOrder) {
-        return getReadableDatabase().query(tableName, projection, selection, selectionArgs, null, null, sortOrder);
+                              String[] selectionArgs, String groupBy, String sortOrder) {
+        return getReadableDatabase().query(tableName, projection, selection, selectionArgs, groupBy, null, sortOrder);
     }
 
     public final long insert(String tableName, ContentValues values) {
@@ -55,4 +55,5 @@ class SQLiteHelper extends SQLiteOpenHelper {
     public final int update(String tableName, ContentValues values, String selection, String[] selectionArgs) {
         return getWritableDatabase().update(tableName, values, selection, selectionArgs);
     }
+
 }

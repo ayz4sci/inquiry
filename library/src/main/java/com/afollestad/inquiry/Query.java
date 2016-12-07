@@ -10,6 +10,7 @@ import android.support.annotation.IntDef;
 import android.support.annotation.IntRange;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.TextUtils;
 
 import com.afollestad.inquiry.annotations.ForeignKey;
 import com.afollestad.inquiry.callbacks.GetCallback;
@@ -52,6 +53,8 @@ public final class Query<RowType, RunReturn> {
     @QueryType
     private final int mQueryType;
     private String[] mProjection;
+    private String[] mDistinct;
+    private String mGroupBy;
     private StringBuilder mWhere;
     private List<String> mWhereArgs;
     private StringBuilder mSortOrder;
@@ -119,7 +122,7 @@ public final class Query<RowType, RunReturn> {
                 throw new IllegalStateException("Database helper was null.");
             else if (mTableName == null)
                 throw new IllegalStateException("Table name was null.");
-            cursor = mInquiry.getDatabase().query(mTableName, null, getWhere(), getWhereArgs(), null);
+            cursor = mInquiry.getDatabase().query(mTableName, null, getWhere(), getWhereArgs(), null, null);
         }
         if (cursor != null) {
             if (position < 0 || position >= cursor.getCount()) {
@@ -305,6 +308,24 @@ public final class Query<RowType, RunReturn> {
         return this;
     }
 
+    @NonNull
+    @CheckResult
+    public Query<RowType, RunReturn> distinct(@NonNull String... values) {
+        if (values.length > 0) {
+            mDistinct = values;
+        }
+        return this;
+    }
+
+    @NonNull
+    @CheckResult
+    public Query<RowType, RunReturn> groupBy(@NonNull String... values) {
+        if (values.length > 0) {
+            mGroupBy = TextUtils.join(",", values);
+        }
+        return this;
+    }
+
     @SuppressWarnings("unchecked")
     @Nullable
     @CheckResult
@@ -316,6 +337,9 @@ public final class Query<RowType, RunReturn> {
         if (mProjection == null)
             mProjection = ClassRowConverter.generateProjection(mRowClass);
 
+        if (mDistinct != null)
+            mProjection = ClassRowConverter.generateDistinct(mDistinct);
+
         String sort = getSort();
         if (limit > -1) sort += String.format(Locale.getDefault(), " LIMIT %d", limit);
         Cursor cursor;
@@ -326,7 +350,7 @@ public final class Query<RowType, RunReturn> {
                 throw new IllegalStateException("Database helper was null.");
             else if (mTableName == null)
                 throw new IllegalStateException("Table name was null.");
-            cursor = mInquiry.getDatabase().query(mTableName, mProjection, getWhere(), getWhereArgs(), sort);
+            cursor = mInquiry.getDatabase().query(mTableName, mProjection, getWhere(), getWhereArgs(), mGroupBy, sort);
         }
 
         if (cursor != null) {
